@@ -15,7 +15,7 @@ pub fn lint_source_with_config(source: &str, path: &str, config: &Config) -> Vec
     let all = rules::all_rules();
     let active: Vec<&dyn Rule> = all
         .iter()
-        .filter(|r| !config.exclude.contains(&r.name().to_string()))
+        .filter(|r| !config.exclude.iter().any(|e| e == r.name()))
         .map(|r| r.as_ref())
         .collect();
     lint_source_with_rules(source, path, &active)

@@ -18,7 +18,6 @@ rayon = "1"
 anyhow = "1"
 toml = "0.8"
 serde = { version = "1", features = ["derive"] }
-regex = "1"
 serde_json = "1"
 
 [dev-dependencies]

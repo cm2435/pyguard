@@ -20,7 +20,7 @@ impl Rule for NoFutureAnnotations {
         diagnostics: &mut Vec<Diagnostic>,
     ) {
         for i in 0..node.child_count() {
-            let child = node.child(i).unwrap();
+            let Some(child) = node.child(i) else { continue };
             match child.kind() {
                 "dotted_name" => {
                     if child.utf8_text(source).unwrap_or("") == "annotations" {

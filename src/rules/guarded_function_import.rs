@@ -36,22 +36,17 @@ impl Rule for GuardedFunctionImport {
         // Check if line R-1 is a comment by examining the source text directly.
         // This is more robust than tree-sibling walking because tree-sitter-python
         // places comments at varying hierarchy levels (sibling of block vs inside block).
-        let lines: Vec<&[u8]> = source.split(|&b| b == b'\n').collect();
-        let prev_line = lines.get(import_row - 1).copied().unwrap_or(b"");
-        let trimmed = trim_ascii(prev_line);
+        let prev_line = source
+            .split(|&b| b == b'\n')
+            .nth(import_row - 1)
+            .unwrap_or(b"");
 
-        if trimmed.starts_with(b"#") {
+        if prev_line.trim_ascii().starts_with(b"#") {
             return; // guarded
         }
 
         diagnostics.push(make_diagnostic(node));
     }
-}
-
-fn trim_ascii(bytes: &[u8]) -> &[u8] {
-    let start = bytes.iter().position(|b| !b.is_ascii_whitespace()).unwrap_or(bytes.len());
-    let end = bytes.iter().rposition(|b| !b.is_ascii_whitespace()).map_or(start, |p| p + 1);
-    &bytes[start..end]
 }
 
 fn make_diagnostic(node: &tree_sitter::Node) -> Diagnostic {

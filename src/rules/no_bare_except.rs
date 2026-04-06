@@ -21,36 +21,31 @@ impl Rule for NoBareExcept {
     ) {
         let exception_type = find_exception_type(node, source);
 
-        match exception_type {
-            None => {
-                diagnostics.push(Diagnostic {
-                    path: String::new(),
-                    line: node.start_position().row + 1,
-                    col: node.start_position().column,
-                    rule_id: "no-bare-except",
-                    message: "Bare `except:` catches all exceptions including KeyboardInterrupt; specify an exception type".to_string(),
-                });
+        let message = match exception_type {
+            None => "Bare `except:` catches all exceptions including KeyboardInterrupt; \
+                     specify an exception type"
+                .to_string(),
+            Some(t) if t == "Exception" || t == "BaseException" => {
+                format!("`except {t}` is too broad; catch specific exception types")
             }
-            Some(type_text) if type_text == "Exception" || type_text == "BaseException" => {
-                diagnostics.push(Diagnostic {
-                    path: String::new(),
-                    line: node.start_position().row + 1,
-                    col: node.start_position().column,
-                    rule_id: "no-bare-except",
-                    message: format!(
-                        "`except {type_text}` is too broad; catch specific exception types"
-                    ),
-                });
-            }
-            Some(_) => {}
-        }
+            Some(_) => return,
+        };
+
+        let pos = node.start_position();
+        diagnostics.push(Diagnostic {
+            path: String::new(),
+            line: pos.row + 1,
+            col: pos.column,
+            rule_id: "no-bare-except",
+            message,
+        });
     }
 }
 
 fn find_exception_type<'a>(node: &tree_sitter::Node, source: &'a [u8]) -> Option<&'a str> {
     let mut found_except_keyword = false;
     for i in 0..node.child_count() {
-        let child = node.child(i).unwrap();
+        let Some(child) = node.child(i) else { continue };
         let kind = child.kind();
         let text = child.utf8_text(source).unwrap_or("");
 

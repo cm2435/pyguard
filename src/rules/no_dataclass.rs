@@ -38,7 +38,7 @@ impl NoDataclass {
         // decorator has children: "@" and then the expression
         // We need to find the expression child (not the "@" token)
         for i in 0..node.child_count() {
-            let child = node.child(i).unwrap();
+            let Some(child) = node.child(i) else { continue };
             if is_dataclass_expr(&child, source) {
                 diagnostics.push(make_diagnostic(node));
                 return;
@@ -54,7 +54,7 @@ impl NoDataclass {
     ) {
         // `import dataclasses`
         for i in 0..node.child_count() {
-            let child = node.child(i).unwrap();
+            let Some(child) = node.child(i) else { continue };
             if child.kind() == "dotted_name"
                 && child.utf8_text(source).unwrap_or("") == "dataclasses"
             {

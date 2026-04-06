@@ -37,13 +37,24 @@ enum OutputFormat {
 fn main() {
     let cli = Cli::parse();
 
-    if let Err(e) = run(&cli) {
-        eprintln!("pyguard: {e:#}");
-        process::exit(2);
-    }
+    let code = match run(&cli) {
+        Ok(has_violations) => {
+            if has_violations {
+                1
+            } else {
+                0
+            }
+        }
+        Err(e) => {
+            eprintln!("pyguard: {e:#}");
+            2
+        }
+    };
+
+    process::exit(code);
 }
 
-fn run(cli: &Cli) -> Result<()> {
+fn run(cli: &Cli) -> Result<bool> {
     let config = config::discover_config(
         cli.paths
             .first()
@@ -54,14 +65,14 @@ fn run(cli: &Cli) -> Result<()> {
     let all_rules = rules::all_rules();
     let active_rules: Vec<&dyn rules::Rule> = all_rules
         .iter()
-        .filter(|r| !config.exclude.contains(&r.name().to_string()))
+        .filter(|r| !config.exclude.iter().any(|e| e == r.name()))
         .map(|r| r.as_ref())
         .collect();
 
     let files = collect_python_files(&cli.paths)?;
 
     if files.is_empty() {
-        return Ok(());
+        return Ok(false);
     }
 
     let violation_count = AtomicUsize::new(0);
@@ -130,11 +141,7 @@ fn run(cli: &Cli) -> Result<()> {
         }
     }
 
-    if violation_count.load(Ordering::Relaxed) > 0 {
-        process::exit(1);
-    }
-
-    Ok(())
+    Ok(violation_count.load(Ordering::Relaxed) > 0)
 }
 
 fn collect_python_files(paths: &[PathBuf]) -> Result<Vec<PathBuf>> {
