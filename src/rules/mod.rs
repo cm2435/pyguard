@@ -1,8 +1,13 @@
 pub mod guarded_function_import;
+pub mod max_function_params;
+pub mod no_assert;
 pub mod no_bare_except;
+pub mod no_boolean_positional;
 pub mod no_dataclass;
 pub mod no_future_annotations;
 pub mod no_hasattr_getattr;
+pub mod no_nested_try;
+pub mod no_pass_except;
 pub mod no_print;
 pub mod no_str_empty_default;
 pub mod no_todo_comment;
@@ -38,5 +43,10 @@ pub fn all_rules() -> Vec<Box<dyn Rule>> {
         Box::new(no_todo_comment::NoTodoComment),
         Box::new(no_str_empty_default::NoStrEmptyDefault),
         Box::new(no_typing_any::NoTypingAny),
+        Box::new(no_assert::NoAssert),
+        Box::new(no_nested_try::NoNestedTry),
+        Box::new(no_pass_except::NoPassExcept),
+        Box::new(max_function_params::MaxFunctionParams::default()),
+        Box::new(no_boolean_positional::NoBooleanPositional),
     ]
 }
