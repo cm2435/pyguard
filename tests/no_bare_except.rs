@@ -10,17 +10,11 @@ fn bare_except() {
 }
 
 #[test]
-fn except_exception() {
+fn except_exception_not_flagged() {
+    // except Exception is handled by no-broad-except, not no-bare-except
     let source = "try:\n    pass\nexcept Exception:\n    pass";
     let d = lint_with_rule(source, "no-bare-except");
-    assert_eq!(d.len(), 1);
-}
-
-#[test]
-fn except_base_exception() {
-    let source = "try:\n    pass\nexcept BaseException:\n    pass";
-    let d = lint_with_rule(source, "no-bare-except");
-    assert_eq!(d.len(), 1);
+    assert_eq!(d.len(), 0);
 }
 
 #[test]
@@ -38,14 +32,7 @@ fn tuple_ok() {
 }
 
 #[test]
-fn broad_with_alias() {
-    let source = "try:\n    pass\nexcept Exception as e:\n    pass";
-    let d = lint_with_rule(source, "no-bare-except");
-    assert_eq!(d.len(), 1);
-}
-
-#[test]
-fn mixed_clauses() {
+fn mixed_clauses_bare_second() {
     let source = "try:\n    pass\nexcept ValueError:\n    pass\nexcept:\n    pass";
     let d = lint_with_rule(source, "no-bare-except");
     assert_eq!(d.len(), 1);

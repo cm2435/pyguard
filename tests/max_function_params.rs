@@ -61,17 +61,19 @@ fn default_params_counted() {
 }
 
 #[test]
-fn star_args_counted() {
+fn star_args_not_counted() {
+    // 8 regular + *args = 8 counted (args excluded), should be ok
     let source = "def f(a, b, c, d, e, f, g, h, *args):\n    pass";
     let d = lint_with_rule(source, "max-function-params");
-    assert_eq!(d.len(), 1);
+    assert_eq!(d.len(), 0);
 }
 
 #[test]
-fn kwargs_counted() {
+fn kwargs_not_counted() {
+    // 8 regular + **kwargs = 8 counted (kwargs excluded), should be ok
     let source = "def f(a, b, c, d, e, f, g, h, **kwargs):\n    pass";
     let d = lint_with_rule(source, "max-function-params");
-    assert_eq!(d.len(), 1);
+    assert_eq!(d.len(), 0);
 }
 
 #[test]

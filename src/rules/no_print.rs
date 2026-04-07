@@ -23,19 +23,8 @@ impl Rule for NoPrint {
             return;
         };
 
-        let is_print = match func.kind() {
-            "identifier" => func.utf8_text(source).unwrap_or("") == "print",
-            "attribute" => {
-                if let Some(attr) = func.child_by_field_name("attribute") {
-                    attr.utf8_text(source).unwrap_or("") == "print"
-                } else {
-                    false
-                }
-            }
-            _ => false,
-        };
-
-        if !is_print {
+        // Only flag bare `print(...)`, not `obj.print(...)` which is a method call
+        if func.kind() != "identifier" || func.utf8_text(source).unwrap_or("") != "print" {
             return;
         }
 

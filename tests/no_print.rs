@@ -15,9 +15,17 @@ fn print_with_args() {
 }
 
 #[test]
-fn builtins_print() {
+fn method_named_print_ok() {
+    // obj.print() is a method call, not the builtin -- should not flag
+    let d = lint_with_rule("printer.print(document)", "no-print");
+    assert_eq!(d.len(), 0);
+}
+
+#[test]
+fn builtins_print_ok() {
+    // builtins.print() is an attribute access -- not flagged (too rare to matter)
     let d = lint_with_rule("builtins.print(\"hello\")", "no-print");
-    assert_eq!(d.len(), 1);
+    assert_eq!(d.len(), 0);
 }
 
 #[test]

@@ -38,14 +38,16 @@ impl Rule for MaxFunctionParams {
             let child = params.child(i).unwrap();
             let kind = child.kind();
             // Count actual parameter nodes, not punctuation
+            // Skip *args and **kwargs -- variadic params don't add calling complexity
+            if matches!(kind, "list_splat_pattern" | "dictionary_splat_pattern") {
+                continue;
+            }
             if matches!(
                 kind,
                 "identifier"
                     | "typed_parameter"
                     | "default_parameter"
                     | "typed_default_parameter"
-                    | "list_splat_pattern"
-                    | "dictionary_splat_pattern"
             ) {
                 // Skip `self` and `cls` as they're boilerplate
                 if kind == "identifier" {

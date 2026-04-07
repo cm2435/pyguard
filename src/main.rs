@@ -56,10 +56,12 @@ fn main() {
 
 fn run(cli: &Cli) -> Result<bool> {
     let config = config::discover_config(
-        cli.paths
-            .first()
-            .map(|p| p.as_path())
-            .unwrap_or_else(|| std::path::Path::new(".")),
+        &std::env::current_dir().unwrap_or_else(|_| {
+            cli.paths
+                .first()
+                .cloned()
+                .unwrap_or_else(|| PathBuf::from("."))
+        }),
     );
 
     let all_rules = rules::all_rules();

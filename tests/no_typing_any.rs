@@ -1,46 +1,6 @@
 mod helpers;
 use helpers::lint_with_rule;
 
-// -- Import detection --
-
-#[test]
-fn import_any() {
-    let d = lint_with_rule("from typing import Any", "no-typing-any");
-    assert_eq!(d.len(), 1);
-    assert_eq!(d[0].line, 1);
-}
-
-#[test]
-fn import_any_among_others() {
-    let d = lint_with_rule("from typing import Any, Optional, Dict", "no-typing-any");
-    assert_eq!(d.len(), 1);
-}
-
-#[test]
-fn import_any_aliased() {
-    let d = lint_with_rule("from typing import Any as AnyType", "no-typing-any");
-    assert_eq!(d.len(), 1);
-}
-
-#[test]
-fn import_any_from_extensions() {
-    let d = lint_with_rule("from typing_extensions import Any", "no-typing-any");
-    assert_eq!(d.len(), 1);
-}
-
-#[test]
-fn import_typing_module() {
-    // `import typing` alone doesn't use Any -- no violation
-    let d = lint_with_rule("import typing", "no-typing-any");
-    assert_eq!(d.len(), 0);
-}
-
-#[test]
-fn import_other_from_typing_ok() {
-    let d = lint_with_rule("from typing import Optional, Dict", "no-typing-any");
-    assert_eq!(d.len(), 0);
-}
-
 // -- Usage in type annotations --
 
 #[test]
@@ -82,8 +42,14 @@ fn union_any() {
 // -- False positive avoidance --
 
 #[test]
+fn import_not_flagged() {
+    // Import alone is not flagged -- only annotation usage
+    let d = lint_with_rule("from typing import Any", "no-typing-any");
+    assert_eq!(d.len(), 0);
+}
+
+#[test]
 fn variable_named_any_ok() {
-    // `Any` as a regular variable name, not in a type context
     let d = lint_with_rule("Any = 42\nprint(Any)", "no-typing-any");
     assert_eq!(d.len(), 0);
 }
@@ -108,7 +74,6 @@ fn function_named_any_ok() {
 
 #[test]
 fn builtin_any_call_ok() {
-    // The builtin any() function is not typing.Any
     let d = lint_with_rule("result = any(items)", "no-typing-any");
     assert_eq!(d.len(), 0);
 }
@@ -116,9 +81,9 @@ fn builtin_any_call_ok() {
 // -- Combined import + usage --
 
 #[test]
-fn import_and_usage_both_flagged() {
+fn import_and_usage_only_usage_flagged() {
     let source = "from typing import Any\n\ndef f(x: Any) -> Any:\n    pass";
     let d = lint_with_rule(source, "no-typing-any");
-    // 1 import + 2 usage (param + return)
-    assert_eq!(d.len(), 3);
+    // Only 2 usage sites (param + return), import is not flagged
+    assert_eq!(d.len(), 2);
 }

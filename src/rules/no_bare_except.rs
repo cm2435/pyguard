@@ -1,6 +1,7 @@
 use crate::diagnostic::Diagnostic;
 use crate::rules::Rule;
 
+/// Flags truly bare `except:` (no exception type specified).
 pub struct NoBareExcept;
 
 impl Rule for NoBareExcept {
@@ -19,30 +20,19 @@ impl Rule for NoBareExcept {
         _ancestors: &[tree_sitter::Node],
         diagnostics: &mut Vec<Diagnostic>,
     ) {
-        let exception_type = find_exception_type(node, source);
-
-        let message = match exception_type {
-            None => "Bare `except:` catches all exceptions including KeyboardInterrupt; \
-                     specify an exception type"
-                .to_string(),
-            Some(t) if t == "Exception" || t == "BaseException" => {
-                format!("`except {t}` is too broad; catch specific exception types")
-            }
-            Some(_) => return,
-        };
-
-        let pos = node.start_position();
-        diagnostics.push(Diagnostic {
-            path: String::new(),
-            line: pos.row + 1,
-            col: pos.column,
-            rule_id: "no-bare-except",
-            message,
-        });
+        if find_exception_type(node, source).is_none() {
+            diagnostics.push(Diagnostic {
+                path: String::new(),
+                line: node.start_position().row + 1,
+                col: node.start_position().column,
+                rule_id: "no-bare-except",
+                message: "Bare `except:` catches all exceptions including KeyboardInterrupt; specify an exception type".to_string(),
+            });
+        }
     }
 }
 
-fn find_exception_type<'a>(node: &tree_sitter::Node, source: &'a [u8]) -> Option<&'a str> {
+pub fn find_exception_type<'a>(node: &tree_sitter::Node, source: &'a [u8]) -> Option<&'a str> {
     let mut found_except_keyword = false;
     for i in 0..node.child_count() {
         let Some(child) = node.child(i) else { continue };

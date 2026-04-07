@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::config::Config;
 use crate::diagnostic::Diagnostic;
 use crate::rules::{self, Rule};
+use crate::rules::no_assert;
 use crate::suppression;
 
 /// Lint source code with all rules and default config.
@@ -60,11 +61,17 @@ pub fn lint_source_with_rules(source: &str, path: &str, rules: &[&dyn Rule]) -> 
                 break;
             }
             if !cursor.goto_parent() {
-                // Back at root -- set path on all diagnostics and filter suppressed
                 for d in &mut diagnostics {
                     d.path = path.to_string();
                 }
-                return suppression::filter_suppressed(diagnostics, source);
+                let mut diagnostics = suppression::filter_suppressed(diagnostics, source);
+
+                // Skip no-assert in test files
+                if no_assert::is_test_file(path) {
+                    diagnostics.retain(|d| d.rule_id != "no-assert");
+                }
+
+                return diagnostics;
             }
             ancestors.pop();
         }

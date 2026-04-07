@@ -57,6 +57,10 @@ try:
     pass
 except:
     pass
+try:
+    pass
+except Exception:
+    pass
 "#;
     let d = lint_source(source, "<test>");
     let ids: Vec<&str> = d.iter().map(|d| d.rule_id).collect();
@@ -66,4 +70,5 @@ except:
     assert!(ids.contains(&"no-print"), "missing no-print");
     assert!(ids.contains(&"guarded-function-import"), "missing guarded-function-import");
     assert!(ids.contains(&"no-bare-except"), "missing no-bare-except");
+    assert!(ids.contains(&"no-broad-except"), "missing no-broad-except");
 }
