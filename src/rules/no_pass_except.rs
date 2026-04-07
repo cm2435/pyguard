@@ -51,6 +51,7 @@ impl Rule for NoPassExcept {
                 line: node.start_position().row + 1,
                 col: node.start_position().column,
                 rule_id: "no-pass-except",
+            severity: crate::rules::Severity::Error,
                 message: "`except` block contains only `pass`; silently swallowing exceptions hides bugs".to_string(),
             });
         }

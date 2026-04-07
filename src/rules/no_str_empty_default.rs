@@ -1,5 +1,5 @@
 use crate::diagnostic::Diagnostic;
-use crate::rules::Rule;
+use crate::rules::{Rule, Severity};
 
 pub struct NoStrEmptyDefault;
 
@@ -7,6 +7,8 @@ impl Rule for NoStrEmptyDefault {
     fn name(&self) -> &'static str {
         "no-str-empty-default"
     }
+
+    fn severity(&self) -> Severity { Severity::Warning }
 
     fn node_kinds(&self) -> &'static [&'static str] {
         &["typed_default_parameter"]
@@ -38,6 +40,7 @@ impl Rule for NoStrEmptyDefault {
             line: node.start_position().row + 1,
             col: node.start_position().column,
             rule_id: "no-str-empty-default",
+            severity: crate::rules::Severity::Error,
             message: "Avoid `str = \"\"`; use `str | None = None` or make the parameter required"
                 .to_string(),
         });

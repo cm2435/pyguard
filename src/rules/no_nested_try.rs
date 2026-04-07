@@ -29,6 +29,7 @@ impl Rule for NoNestedTry {
             line: node.start_position().row + 1,
             col: node.start_position().column,
             rule_id: "no-nested-try",
+            severity: crate::rules::Severity::Error,
             message: "Avoid nested `try` blocks; extract the inner try into a separate function"
                 .to_string(),
         });

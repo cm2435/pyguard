@@ -1,5 +1,5 @@
 use crate::diagnostic::Diagnostic;
-use crate::rules::Rule;
+use crate::rules::{Rule, Severity};
 
 pub struct NoTypingAny;
 
@@ -7,6 +7,8 @@ impl Rule for NoTypingAny {
     fn name(&self) -> &'static str {
         "no-typing-any"
     }
+
+    fn severity(&self) -> Severity { Severity::Warning }
 
     fn node_kinds(&self) -> &'static [&'static str] {
         &["type"]
@@ -36,6 +38,7 @@ fn find_any_identifiers(
             line: node.start_position().row + 1,
             col: node.start_position().column,
             rule_id: "no-typing-any",
+            severity: crate::rules::Severity::Error,
             message: "Avoid `Any` in type annotations; use specific types or protocols"
                 .to_string(),
         });

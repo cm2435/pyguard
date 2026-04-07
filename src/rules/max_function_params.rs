@@ -1,5 +1,5 @@
 use crate::diagnostic::Diagnostic;
-use crate::rules::Rule;
+use crate::rules::{Rule, Severity};
 
 pub const DEFAULT_MAX_PARAMS: usize = 8;
 
@@ -17,6 +17,8 @@ impl Rule for MaxFunctionParams {
     fn name(&self) -> &'static str {
         "max-function-params"
     }
+
+    fn severity(&self) -> Severity { Severity::Warning }
 
     fn node_kinds(&self) -> &'static [&'static str] {
         &["function_definition"]
@@ -74,6 +76,7 @@ impl Rule for MaxFunctionParams {
                 line: node.start_position().row + 1,
                 col: node.start_position().column,
                 rule_id: "max-function-params",
+            severity: crate::rules::Severity::Error,
                 message: format!(
                     "Function has {count} parameters (max {}); group related parameters into a dataclass or model",
                     self.max

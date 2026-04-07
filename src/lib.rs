@@ -7,3 +7,4 @@ pub mod suppression;
 pub use config::Config;
 pub use diagnostic::Diagnostic;
 pub use engine::{lint_source, lint_source_with_config, lint_source_with_rules};
+pub use rules::Severity;

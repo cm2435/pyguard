@@ -1,5 +1,5 @@
 use crate::diagnostic::Diagnostic;
-use crate::rules::Rule;
+use crate::rules::{Rule, Severity};
 
 pub struct GuardedFunctionImport;
 
@@ -7,6 +7,8 @@ impl Rule for GuardedFunctionImport {
     fn name(&self) -> &'static str {
         "guarded-function-import"
     }
+
+    fn severity(&self) -> Severity { Severity::Warning }
 
     fn node_kinds(&self) -> &'static [&'static str] {
         &["import_statement", "import_from_statement"]
@@ -55,6 +57,7 @@ fn make_diagnostic(node: &tree_sitter::Node) -> Diagnostic {
         line: node.start_position().row + 1,
         col: node.start_position().column,
         rule_id: "guarded-function-import",
+            severity: crate::rules::Severity::Error,
         message: "Function-scope `import` requires a `# reason` comment on the line immediately above".to_string(),
     }
 }

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::config::Config;
 use crate::diagnostic::Diagnostic;
-use crate::rules::{self, Rule};
+use crate::rules::{self, Rule, Severity};
 use crate::rules::no_assert;
 use crate::suppression;
 
@@ -11,18 +11,28 @@ pub fn lint_source(source: &str, path: &str) -> Vec<Diagnostic> {
     lint_source_with_config(source, path, &Config::default())
 }
 
-/// Lint source code with all rules, applying config exclusions and inline suppression.
+/// Lint source code with all rules, applying config exclusions, per-file ignores,
+/// Python version filtering, and inline suppression.
 pub fn lint_source_with_config(source: &str, path: &str, config: &Config) -> Vec<Diagnostic> {
-    let all = rules::all_rules();
-    let active: Vec<&dyn Rule> = all
+    let all = rules::all_rules_with_config(config);
+
+    let per_file_excludes = config.excludes_for_path(path);
+
+    let mut active: Vec<&dyn Rule> = all
         .iter()
-        .filter(|r| !config.exclude.iter().any(|e| e == r.name()))
+        .filter(|r| !per_file_excludes.contains(r.name()))
         .map(|r| r.as_ref())
         .collect();
+
+    // Auto-disable no-future-annotations if Python version < 3.13
+    if config.min_python_version.is_some_and(|v| v < (3, 13)) {
+        active.retain(|r| r.name() != "no-future-annotations");
+    }
+
     lint_source_with_rules(source, path, &active)
 }
 
-/// Lint source code with a specific set of rules.
+/// Lint source code with a specific set of rules (low-level API for tests).
 pub fn lint_source_with_rules(source: &str, path: &str, rules: &[&dyn Rule]) -> Vec<Diagnostic> {
     let source_bytes = source.as_bytes();
 
@@ -36,7 +46,12 @@ pub fn lint_source_with_rules(source: &str, path: &str, rules: &[&dyn Rule]) -> 
         None => return Vec::new(),
     };
 
+    // Build a dispatch map AND a severity map from the active rules
     let dispatch_map = build_dispatch_map(rules);
+    let severity_map: HashMap<&str, Severity> = rules
+        .iter()
+        .map(|r| (r.name(), r.severity()))
+        .collect();
 
     let mut diagnostics = Vec::new();
     let mut ancestors: Vec<tree_sitter::Node> = Vec::new();
@@ -61,12 +76,16 @@ pub fn lint_source_with_rules(source: &str, path: &str, rules: &[&dyn Rule]) -> 
                 break;
             }
             if !cursor.goto_parent() {
+                // Set path and severity on all diagnostics
                 for d in &mut diagnostics {
                     d.path = path.to_string();
+                    if let Some(&sev) = severity_map.get(d.rule_id) {
+                        d.severity = sev;
+                    }
                 }
+
                 let mut diagnostics = suppression::filter_suppressed(diagnostics, source);
 
-                // Skip no-assert in test files
                 if no_assert::is_test_file(path) {
                     diagnostics.retain(|d| d.rule_id != "no-assert");
                 }

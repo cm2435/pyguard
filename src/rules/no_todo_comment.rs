@@ -1,5 +1,5 @@
 use crate::diagnostic::Diagnostic;
-use crate::rules::Rule;
+use crate::rules::{Rule, Severity};
 
 const MARKERS: &[&str] = &["TODO", "FIXME", "HACK", "XXX"];
 
@@ -9,6 +9,8 @@ impl Rule for NoTodoComment {
     fn name(&self) -> &'static str {
         "no-todo-comment"
     }
+
+    fn severity(&self) -> Severity { Severity::Warning }
 
     fn node_kinds(&self) -> &'static [&'static str] {
         &["comment"]
@@ -43,6 +45,7 @@ impl Rule for NoTodoComment {
                         line: pos.row + 1,
                         col: pos.column,
                         rule_id: "no-todo-comment",
+            severity: crate::rules::Severity::Error,
                         message: format!(
                             "Found `{marker}` comment; resolve or track in an issue"
                         ),

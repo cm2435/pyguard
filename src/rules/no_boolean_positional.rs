@@ -1,5 +1,5 @@
 use crate::diagnostic::Diagnostic;
-use crate::rules::Rule;
+use crate::rules::{Rule, Severity};
 
 pub struct NoBooleanPositional;
 
@@ -7,6 +7,8 @@ impl Rule for NoBooleanPositional {
     fn name(&self) -> &'static str {
         "no-boolean-positional"
     }
+
+    fn severity(&self) -> Severity { Severity::Warning }
 
     fn node_kinds(&self) -> &'static [&'static str] {
         &["call"]
@@ -44,6 +46,7 @@ impl Rule for NoBooleanPositional {
                     line: arg.start_position().row + 1,
                     col: arg.start_position().column,
                     rule_id: "no-boolean-positional",
+            severity: crate::rules::Severity::Error,
                     message: "Avoid bare boolean positional arguments; use keyword arguments for clarity".to_string(),
                 });
             }

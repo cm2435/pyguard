@@ -26,6 +26,7 @@ impl Rule for NoBareExcept {
                 line: node.start_position().row + 1,
                 col: node.start_position().column,
                 rule_id: "no-bare-except",
+            severity: crate::rules::Severity::Error,
                 message: "Bare `except:` catches all exceptions including KeyboardInterrupt; specify an exception type".to_string(),
             });
         }

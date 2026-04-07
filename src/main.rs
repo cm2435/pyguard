@@ -10,7 +10,7 @@ use rayon::prelude::*;
 use pyguard::config;
 use pyguard::diagnostic::Diagnostic;
 use pyguard::engine;
-use pyguard::rules;
+use pyguard::rules::Severity;
 
 #[derive(Parser)]
 #[command(name = "pyguard", version, about = "Fast Python linter for LLM-generated anti-patterns")]
@@ -22,6 +22,10 @@ struct Cli {
     /// Suppress output; only set exit code
     #[arg(short, long)]
     quiet: bool,
+
+    /// Only fail (exit 1) on errors, not warnings
+    #[arg(long)]
+    warn_only: bool,
 
     /// Output format
     #[arg(long, default_value = "text")]
@@ -39,11 +43,7 @@ fn main() {
 
     let code = match run(&cli) {
         Ok(has_violations) => {
-            if has_violations {
-                1
-            } else {
-                0
-            }
+            if has_violations { 1 } else { 0 }
         }
         Err(e) => {
             eprintln!("pyguard: {e:#}");
@@ -64,20 +64,14 @@ fn run(cli: &Cli) -> Result<bool> {
         }),
     );
 
-    let all_rules = rules::all_rules();
-    let active_rules: Vec<&dyn rules::Rule> = all_rules
-        .iter()
-        .filter(|r| !config.exclude.iter().any(|e| e == r.name()))
-        .map(|r| r.as_ref())
-        .collect();
-
     let files = collect_python_files(&cli.paths)?;
 
     if files.is_empty() {
         return Ok(false);
     }
 
-    let violation_count = AtomicUsize::new(0);
+    let error_count = AtomicUsize::new(0);
+    let warning_count = AtomicUsize::new(0);
 
     let all_diagnostics: Vec<Vec<Diagnostic>> = files
         .par_iter()
@@ -89,12 +83,17 @@ fn run(cli: &Cli) -> Result<bool> {
 
             let path_str = path.to_string_lossy();
             let diagnostics =
-                engine::lint_source_with_rules(&source, &path_str, &active_rules);
+                engine::lint_source_with_config(&source, &path_str, &config);
 
             if diagnostics.is_empty() {
                 None
             } else {
-                violation_count.fetch_add(diagnostics.len(), Ordering::Relaxed);
+                for d in &diagnostics {
+                    match d.severity {
+                        Severity::Error => { error_count.fetch_add(1, Ordering::Relaxed); }
+                        Severity::Warning => { warning_count.fetch_add(1, Ordering::Relaxed); }
+                    }
+                }
                 Some(diagnostics)
             }
         })
@@ -124,6 +123,10 @@ fn run(cli: &Cli) -> Result<bool> {
                             "line": d.line,
                             "col": d.col,
                             "rule_id": d.rule_id,
+                            "severity": match d.severity {
+                                Severity::Error => "error",
+                                Severity::Warning => "warning",
+                            },
                             "message": d.message,
                         })
                     })
@@ -132,18 +135,27 @@ fn run(cli: &Cli) -> Result<bool> {
             }
         }
 
-        let total = violation_count.load(Ordering::Relaxed);
+        let errors = error_count.load(Ordering::Relaxed);
+        let warnings = warning_count.load(Ordering::Relaxed);
+        let total = errors + warnings;
         if total > 0 {
             eprintln!(
-                "\nFound {total} violation{} across {} file{}.",
+                "\nFound {total} violation{} ({errors} error{}, {warnings} warning{}) across {} file{}.",
                 if total == 1 { "" } else { "s" },
+                if errors == 1 { "" } else { "s" },
+                if warnings == 1 { "" } else { "s" },
                 all_diagnostics.len(),
                 if all_diagnostics.len() == 1 { "" } else { "s" },
             );
         }
     }
 
-    Ok(violation_count.load(Ordering::Relaxed) > 0)
+    if cli.warn_only {
+        Ok(error_count.load(Ordering::Relaxed) > 0)
+    } else {
+        let total = error_count.load(Ordering::Relaxed) + warning_count.load(Ordering::Relaxed);
+        Ok(total > 0)
+    }
 }
 
 fn collect_python_files(paths: &[PathBuf]) -> Result<Vec<PathBuf>> {

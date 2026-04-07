@@ -1,5 +1,5 @@
 use crate::diagnostic::Diagnostic;
-use crate::rules::Rule;
+use crate::rules::{Rule, Severity};
 
 pub struct NoDataclass;
 
@@ -7,6 +7,8 @@ impl Rule for NoDataclass {
     fn name(&self) -> &'static str {
         "no-dataclass"
     }
+
+    fn severity(&self) -> Severity { Severity::Warning }
 
     fn node_kinds(&self) -> &'static [&'static str] {
         &["decorator", "import_statement", "import_from_statement"]
@@ -115,6 +117,7 @@ fn make_diagnostic(node: &tree_sitter::Node) -> Diagnostic {
         line: node.start_position().row + 1,
         col: node.start_position().column,
         rule_id: "no-dataclass",
+            severity: crate::rules::Severity::Error,
         message: "Avoid `dataclass`; use Pydantic `BaseModel` or project-standard model base"
             .to_string(),
     }

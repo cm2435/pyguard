@@ -24,6 +24,7 @@ impl Rule for NoAssert {
             line: node.start_position().row + 1,
             col: node.start_position().column,
             rule_id: "no-assert",
+            severity: crate::rules::Severity::Error,
             message: "Avoid `assert` in production code; use `if not ...: raise ValueError(...)` instead".to_string(),
         });
     }

@@ -53,6 +53,7 @@ impl Rule for NoHasattrGetattr {
             line: node.start_position().row + 1,
             col: node.start_position().column,
             rule_id: "no-hasattr-getattr",
+            severity: crate::rules::Severity::Error,
             message: format!(
                 "Avoid `{fn_name}()`; use explicit attribute checks or protocols"
             ),

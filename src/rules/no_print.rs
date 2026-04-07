@@ -1,5 +1,5 @@
 use crate::diagnostic::Diagnostic;
-use crate::rules::Rule;
+use crate::rules::{Rule, Severity};
 
 pub struct NoPrint;
 
@@ -7,6 +7,8 @@ impl Rule for NoPrint {
     fn name(&self) -> &'static str {
         "no-print"
     }
+
+    fn severity(&self) -> Severity { Severity::Warning }
 
     fn node_kinds(&self) -> &'static [&'static str] {
         &["call"]
@@ -33,6 +35,7 @@ impl Rule for NoPrint {
             line: node.start_position().row + 1,
             col: node.start_position().column,
             rule_id: "no-print",
+            severity: crate::rules::Severity::Error,
             message: "Avoid `print()`; use structured logging (structlog, logging, etc.)"
                 .to_string(),
         });

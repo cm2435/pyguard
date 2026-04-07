@@ -14,16 +14,19 @@ pub mod no_str_empty_default;
 pub mod no_todo_comment;
 pub mod no_typing_any;
 
+use crate::config::Config;
 use crate::diagnostic::Diagnostic;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Severity {
+    Error,
+    Warning,
+}
+
 pub trait Rule: Send + Sync {
-    /// Unique rule identifier, e.g. "no-hasattr-getattr".
     fn name(&self) -> &'static str;
-
-    /// CST node kinds this rule wants to inspect.
+    fn severity(&self) -> Severity { Severity::Error }
     fn node_kinds(&self) -> &'static [&'static str];
-
-    /// Inspect a single node. Push to `diagnostics` if violated.
     fn check(
         &self,
         node: &tree_sitter::Node,
@@ -33,7 +36,15 @@ pub trait Rule: Send + Sync {
     );
 }
 
-pub fn all_rules() -> Vec<Box<dyn Rule>> {
+/// Build the default rule set. Pass config to apply per-rule settings.
+pub fn all_rules_with_config(config: &Config) -> Vec<Box<dyn Rule>> {
+    let max = config
+        .rules
+        .max_function_params
+        .as_ref()
+        .map(|c| c.max)
+        .unwrap_or(max_function_params::DEFAULT_MAX_PARAMS);
+
     vec![
         Box::new(no_hasattr_getattr::NoHasattrGetattr),
         Box::new(guarded_function_import::GuardedFunctionImport),
@@ -48,7 +59,12 @@ pub fn all_rules() -> Vec<Box<dyn Rule>> {
         Box::new(no_assert::NoAssert),
         Box::new(no_nested_try::NoNestedTry),
         Box::new(no_pass_except::NoPassExcept),
-        Box::new(max_function_params::MaxFunctionParams::default()),
+        Box::new(max_function_params::MaxFunctionParams { max }),
         Box::new(no_boolean_positional::NoBooleanPositional),
     ]
+}
+
+/// Build the default rule set with default config.
+pub fn all_rules() -> Vec<Box<dyn Rule>> {
+    all_rules_with_config(&Config::default())
 }

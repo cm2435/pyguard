@@ -57,6 +57,7 @@ fn make_diagnostic(node: &tree_sitter::Node, broad_type: &str) -> Diagnostic {
         line: node.start_position().row + 1,
         col: node.start_position().column,
         rule_id: "no-broad-except",
+            severity: crate::rules::Severity::Error,
         message: format!(
             "`except {broad_type}` is too broad; catch specific exception types"
         ),
