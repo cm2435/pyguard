@@ -3,7 +3,7 @@ requires = ["maturin>=1.0,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "pyguard"
+name = "slopcop"
 version = "0.1.0"
 description = "Fast Python linter for catching LLM-generated anti-patterns"
 readme = "README.md"
@@ -21,7 +21,7 @@ classifiers = [
 ]
 
 [project.urls]
-Repository = "https://github.com/cm2435/pyguard"
+Repository = "https://github.com/cm2435/slopcop"
 
 [tool.maturin]
 bindings = "bin"

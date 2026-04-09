@@ -1,6 +1,6 @@
 mod helpers;
 use helpers::count_rule;
-use pyguard::{lint_source_with_config, Config};
+use slopcop::{lint_source_with_config, Config};
 
 #[test]
 fn default_all_active() {
@@ -87,7 +87,7 @@ fn per_file_ignore_double_star_middle() {
 fn max_function_params_custom() {
     let source = "def f(a, b, c, d, e, f, g, h, i, j):\n    pass";
     let mut config = Config::default();
-    config.rules.max_function_params = Some(pyguard::config::MaxFunctionParamsConfig { max: 10 });
+    config.rules.max_function_params = Some(slopcop::config::MaxFunctionParamsConfig { max: 10 });
     let d = lint_source_with_config(source, "<test>", &config);
     assert_eq!(count_rule(&d, "max-function-params"), 0);
 }
@@ -96,7 +96,7 @@ fn max_function_params_custom() {
 fn max_function_params_custom_exceeded() {
     let source = "def f(a, b, c, d, e, f, g, h, i, j, k):\n    pass";
     let mut config = Config::default();
-    config.rules.max_function_params = Some(pyguard::config::MaxFunctionParamsConfig { max: 10 });
+    config.rules.max_function_params = Some(slopcop::config::MaxFunctionParamsConfig { max: 10 });
     let d = lint_source_with_config(source, "<test>", &config);
     assert_eq!(count_rule(&d, "max-function-params"), 1);
 }
@@ -136,7 +136,7 @@ fn error_severity_on_bare_except() {
     let source = "try:\n    pass\nexcept:\n    pass";
     let d = lint_source_with_config(source, "<test>", &Config::default());
     let bare = d.iter().find(|d| d.rule_id == "no-bare-except").unwrap();
-    assert_eq!(bare.severity, pyguard::Severity::Error);
+    assert_eq!(bare.severity, slopcop::Severity::Error);
 }
 
 #[test]
@@ -144,7 +144,7 @@ fn warning_severity_on_print() {
     let source = "print(\"hi\")";
     let d = lint_source_with_config(source, "<test>", &Config::default());
     let print_d = d.iter().find(|d| d.rule_id == "no-print").unwrap();
-    assert_eq!(print_d.severity, pyguard::Severity::Warning);
+    assert_eq!(print_d.severity, slopcop::Severity::Warning);
 }
 
 #[test]

@@ -1,6 +1,6 @@
 #![allow(dead_code)]
-use pyguard::{Diagnostic, lint_source_with_rules};
-use pyguard::rules::{self, Rule};
+use slopcop::{Diagnostic, lint_source_with_rules};
+use slopcop::rules::{self, Rule};
 
 pub fn count_rule(diagnostics: &[Diagnostic], rule_id: &str) -> usize {
     diagnostics.iter().filter(|d| d.rule_id == rule_id).count()

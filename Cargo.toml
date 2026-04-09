@@ -1,12 +1,15 @@
 [package]
-name = "pyguard"
+name = "slopcop"
 version = "0.1.0"
 edition = "2021"
 description = "A fast Python linter for catching LLM-generated anti-patterns"
 license = "MIT"
+repository = "https://github.com/cm2435/slopcop"
+keywords = ["linter", "python", "tree-sitter", "code-quality"]
+categories = ["development-tools"]
 
 [[bin]]
-name = "pyguard"
+name = "slopcop"
 path = "src/main.rs"
 
 [dependencies]
@@ -19,5 +22,3 @@ anyhow = "1"
 toml = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-
-[dev-dependencies]

@@ -1,6 +1,6 @@
 mod helpers;
 use helpers::lint_with_rule;
-use pyguard::lint_source;
+use slopcop::lint_source;
 
 #[test]
 fn basic_assert() {

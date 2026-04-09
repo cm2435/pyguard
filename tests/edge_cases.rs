@@ -1,6 +1,6 @@
 mod helpers;
 use helpers::count_rule;
-use pyguard::lint_source;
+use slopcop::lint_source;
 
 #[test]
 fn empty_file() {

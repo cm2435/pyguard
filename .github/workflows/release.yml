@@ -85,7 +85,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/pyguard
+      url: https://pypi.org/p/slopcop
     permissions:
       id-token: write
     steps:

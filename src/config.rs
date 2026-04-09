@@ -58,10 +58,10 @@ struct ProjectTable {
 
 #[derive(Deserialize)]
 struct ToolTable {
-    pyguard: Option<Config>,
+    slopcop: Option<Config>,
 }
 
-/// Walk upward from `start_dir` looking for a pyproject.toml with [tool.pyguard].
+/// Walk upward from `start_dir` looking for a pyproject.toml with [tool.slopcop].
 /// Returns Config::default() if nothing is found.
 pub fn discover_config(start_dir: &Path) -> Config {
     let mut dir = if start_dir.is_file() {
@@ -90,7 +90,7 @@ fn try_load_config(path: &Path) -> Result<Config> {
 
     let mut config = pyproject
         .tool
-        .and_then(|t| t.pyguard)
+        .and_then(|t| t.slopcop)
         .unwrap_or_default();
 
     // Extract min Python version from [project].requires-python

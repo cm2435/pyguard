@@ -7,13 +7,13 @@ use clap::Parser;
 use ignore::WalkBuilder;
 use rayon::prelude::*;
 
-use pyguard::config;
-use pyguard::diagnostic::Diagnostic;
-use pyguard::engine;
-use pyguard::rules::Severity;
+use slopcop::config;
+use slopcop::diagnostic::Diagnostic;
+use slopcop::engine;
+use slopcop::rules::Severity;
 
 #[derive(Parser)]
-#[command(name = "pyguard", version, about = "Fast Python linter for LLM-generated anti-patterns")]
+#[command(name = "slopcop", version, about = "Fast Python linter for LLM-generated anti-patterns")]
 struct Cli {
     /// Files or directories to lint (walks recursively for .py files)
     #[arg(required = true)]
@@ -46,7 +46,7 @@ fn main() {
             if has_violations { 1 } else { 0 }
         }
         Err(e) => {
-            eprintln!("pyguard: {e:#}");
+            eprintln!("slopcop: {e:#}");
             2
         }
     };

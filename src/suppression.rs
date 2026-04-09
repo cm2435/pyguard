@@ -1,6 +1,6 @@
 use crate::diagnostic::Diagnostic;
 
-/// Filter out diagnostics suppressed by inline `# pyguard: ignore` comments.
+/// Filter out diagnostics suppressed by inline `# slopcop: ignore` comments.
 pub fn filter_suppressed(diagnostics: Vec<Diagnostic>, source: &str) -> Vec<Diagnostic> {
     let lines: Vec<&str> = source.lines().collect();
     diagnostics
@@ -12,18 +12,18 @@ pub fn filter_suppressed(diagnostics: Vec<Diagnostic>, source: &str) -> Vec<Diag
         .collect()
 }
 
-/// Check if a source line suppresses a given rule_id via `# pyguard: ignore`.
+/// Check if a source line suppresses a given rule_id via `# slopcop: ignore`.
 ///
 /// Supported forms:
-///   # pyguard: ignore                           -- blanket, suppresses all rules
-///   # pyguard: ignore[rule-id]                  -- targeted single
-///   # pyguard: ignore[rule-a, rule-b]           -- targeted multi
+///   # slopcop: ignore                           -- blanket, suppresses all rules
+///   # slopcop: ignore[rule-id]                  -- targeted single
+///   # slopcop: ignore[rule-a, rule-b]           -- targeted multi
 pub fn is_suppressed(line: &str, rule_id: &str) -> bool {
-    let Some(comment_start) = line.find("# pyguard: ignore") else {
+    let Some(comment_start) = line.find("# slopcop: ignore") else {
         return false;
     };
 
-    let after = &line[comment_start + "# pyguard: ignore".len()..];
+    let after = &line[comment_start + "# slopcop: ignore".len()..];
 
     // Blanket ignore: nothing after, or only whitespace
     let after_trimmed = after.trim_start();
