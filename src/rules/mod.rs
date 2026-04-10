@@ -11,6 +11,7 @@ pub mod no_nested_try;
 pub mod no_pass_except;
 pub mod no_print;
 pub mod no_redundant_none_check;
+pub mod no_sentinel_default;
 pub mod no_str_empty_default;
 pub mod no_todo_comment;
 pub mod no_typing_any;
@@ -63,6 +64,7 @@ pub fn all_rules_with_config(config: &Config) -> Vec<Box<dyn Rule>> {
         Box::new(max_function_params::MaxFunctionParams { max }),
         Box::new(no_boolean_positional::NoBooleanPositional),
         Box::new(no_redundant_none_check::NoRedundantNoneCheck),
+        Box::new(no_sentinel_default::NoSentinelDefault),
     ]
 }
 
