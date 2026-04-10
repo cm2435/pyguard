@@ -12,6 +12,13 @@ impl Rule for NoSentinelDefault {
         Severity::Warning
     }
 
+    fn help(&self) -> &'static str {
+        "Placeholder/sentinel defaults (e.g. \"foo\", \"changeme\", \
+         UUID(int=0)) leak into production when callers forget to override \
+         them. Use `None` as the default and validate at runtime, or make \
+         the parameter/field required."
+    }
+
     fn node_kinds(&self) -> &'static [&'static str] {
         &["typed_default_parameter", "assignment"]
     }

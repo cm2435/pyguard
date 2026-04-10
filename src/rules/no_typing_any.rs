@@ -10,6 +10,14 @@ impl Rule for NoTypingAny {
 
     fn severity(&self) -> Severity { Severity::Warning }
 
+    fn help(&self) -> &'static str {
+        "`Any` disables type checking for everything it touches. Use a specific \
+         type, a `Protocol`, `TypeVar`, or `object` instead. For `*args` / \
+         `**kwargs` this rule is auto-skipped. If the type is truly unknowable \
+         (e.g. untyped third-party API), suppress with \
+         `# slopcop: ignore[no-typing-any]`."
+    }
+
     fn node_kinds(&self) -> &'static [&'static str] {
         &["type"]
     }

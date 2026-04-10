@@ -28,6 +28,9 @@ pub enum Severity {
 pub trait Rule: Send + Sync {
     fn name(&self) -> &'static str;
     fn severity(&self) -> Severity { Severity::Error }
+    /// Detailed guidance shown once per rule when violations are grouped.
+    /// Should explain *why* the pattern is bad and *how* to fix it properly.
+    fn help(&self) -> &'static str { "" }
     fn node_kinds(&self) -> &'static [&'static str];
     fn check(
         &self,
@@ -71,4 +74,13 @@ pub fn all_rules_with_config(config: &Config) -> Vec<Box<dyn Rule>> {
 /// Build the default rule set with default config.
 pub fn all_rules() -> Vec<Box<dyn Rule>> {
     all_rules_with_config(&Config::default())
+}
+
+/// Return a map from rule_id → help text for all rules.
+pub fn help_texts(config: &Config) -> std::collections::HashMap<&'static str, &'static str> {
+    all_rules_with_config(config)
+        .iter()
+        .filter(|r| !r.help().is_empty())
+        .map(|r| (r.name(), r.help()))
+        .collect()
 }

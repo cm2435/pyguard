@@ -10,6 +10,13 @@ impl Rule for NoDataclass {
 
     fn severity(&self) -> Severity { Severity::Warning }
 
+    fn help(&self) -> &'static str {
+        "This project standardises on Pydantic `BaseModel` (or an equivalent) \
+         as its model base. Replace `@dataclass` with the project's standard \
+         model class for consistency, automatic validation, and serialisation \
+         support."
+    }
+
     fn node_kinds(&self) -> &'static [&'static str] {
         &["decorator", "import_statement", "import_from_statement"]
     }

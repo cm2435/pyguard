@@ -10,6 +10,14 @@ impl Rule for NoStrEmptyDefault {
 
     fn severity(&self) -> Severity { Severity::Warning }
 
+    fn help(&self) -> &'static str {
+        "An empty-string default (`str = \"\"`) makes it impossible to \
+         distinguish \"not provided\" from \"explicitly empty\". Use \
+         `str | None = None` so callers and downstream code can check for \
+         `None`, or make the parameter/field required if it should always \
+         have a value."
+    }
+
     fn node_kinds(&self) -> &'static [&'static str] {
         &["typed_default_parameter", "assignment"]
     }

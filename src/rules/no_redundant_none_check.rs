@@ -10,6 +10,13 @@ impl Rule for NoRedundantNoneCheck {
 
     fn severity(&self) -> Severity { Severity::Warning }
 
+    fn help(&self) -> &'static str {
+        "The variable's type annotation does not include `None`, so an \
+         `x is None` / `x is not None` check is dead code or indicates a \
+         wrong annotation. Either widen the type to `T | None` if `None` is \
+         a valid value, or remove the check."
+    }
+
     fn node_kinds(&self) -> &'static [&'static str] {
         &["comparison_operator"]
     }

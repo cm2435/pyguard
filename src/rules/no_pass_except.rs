@@ -8,6 +8,14 @@ impl Rule for NoPassExcept {
         "no-pass-except"
     }
 
+    fn help(&self) -> &'static str {
+        "An `except` block with only `pass` silently swallows errors, hiding \
+         bugs. At minimum log the exception with `logger.exception(...)`. If \
+         the exception truly should be ignored (e.g. optional cleanup), add a \
+         comment explaining why and suppress with \
+         `# slopcop: ignore[no-pass-except]`."
+    }
+
     fn node_kinds(&self) -> &'static [&'static str] {
         &["except_clause"]
     }

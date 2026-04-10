@@ -20,6 +20,13 @@ impl Rule for MaxFunctionParams {
 
     fn severity(&self) -> Severity { Severity::Warning }
 
+    fn help(&self) -> &'static str {
+        "Too many parameters make a function hard to call correctly and hard \
+         to test. Group related parameters into a Pydantic model, dataclass, \
+         TypedDict, or config object. Common patterns: request/response \
+         models, config objects, builder pattern."
+    }
+
     fn node_kinds(&self) -> &'static [&'static str] {
         &["function_definition"]
     }

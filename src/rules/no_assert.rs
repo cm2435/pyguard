@@ -8,6 +8,13 @@ impl Rule for NoAssert {
         "no-assert"
     }
 
+    fn help(&self) -> &'static str {
+        "`assert` statements are stripped when Python runs with `-O` \
+         (optimized). Use `if not ...: raise ValueError(...)` for validation \
+         that must always execute. This rule is auto-disabled in test files \
+         (`test_*.py`, `*_test.py`, and `tests/` directories)."
+    }
+
     fn node_kinds(&self) -> &'static [&'static str] {
         &["assert_statement"]
     }

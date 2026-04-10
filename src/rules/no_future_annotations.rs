@@ -10,6 +10,13 @@ impl Rule for NoFutureAnnotations {
 
     fn severity(&self) -> Severity { Severity::Warning }
 
+    fn help(&self) -> &'static str {
+        "`from __future__ import annotations` is unnecessary on Python 3.13+ \
+         and breaks runtime inspection of annotations used by Pydantic, \
+         FastAPI, and other frameworks that evaluate type hints at runtime. \
+         Remove the import line."
+    }
+
     fn node_kinds(&self) -> &'static [&'static str] {
         &["future_import_statement"]
     }

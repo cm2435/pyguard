@@ -13,6 +13,15 @@ impl Rule for NoBroadExcept {
         "no-broad-except"
     }
 
+    fn help(&self) -> &'static str {
+        "Catching `Exception` or `BaseException` masks bugs and makes debugging \
+         harder. Identify the specific exceptions the code actually needs to \
+         handle (e.g. `ValueError`, `KeyError`, `IOError`) and catch those \
+         instead. If this is a top-level error boundary (event loop, request \
+         handler) where broad catching is intentional, suppress with \
+         `# slopcop: ignore[no-broad-except]`."
+    }
+
     fn node_kinds(&self) -> &'static [&'static str] {
         &["except_clause"]
     }

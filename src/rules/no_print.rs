@@ -10,6 +10,14 @@ impl Rule for NoPrint {
 
     fn severity(&self) -> Severity { Severity::Warning }
 
+    fn help(&self) -> &'static str {
+        "Use `logging.getLogger(__name__)` or `structlog.get_logger()` instead \
+         of `print()`. Structured logging supports log levels, context fields, \
+         and downstream filtering. If this is a CLI entrypoint or user-facing \
+         script where `print()` is intentional, add the path glob to \
+         `[tool.slopcop.per-file-ignores]` in `pyproject.toml`."
+    }
+
     fn node_kinds(&self) -> &'static [&'static str] {
         &["call"]
     }

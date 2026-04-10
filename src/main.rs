@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::path::PathBuf;
 use std::process;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -10,7 +11,7 @@ use rayon::prelude::*;
 use slopcop::config;
 use slopcop::diagnostic::Diagnostic;
 use slopcop::engine;
-use slopcop::rules::Severity;
+use slopcop::rules::{self, Severity};
 
 #[derive(Parser)]
 #[command(name = "slopcop", version, about = "Fast Python linter for LLM-generated anti-patterns")]
@@ -110,28 +111,10 @@ fn run(cli: &Cli) -> Result<bool> {
 
         match cli.format {
             OutputFormat::Text => {
-                for d in &flat {
-                    eprintln!("{d}");
-                }
+                print_grouped_text(&flat, &config);
             }
             OutputFormat::Json => {
-                let entries: Vec<serde_json::Value> = flat
-                    .iter()
-                    .map(|d| {
-                        serde_json::json!({
-                            "path": d.path,
-                            "line": d.line,
-                            "col": d.col,
-                            "rule_id": d.rule_id,
-                            "severity": match d.severity {
-                                Severity::Error => "error",
-                                Severity::Warning => "warning",
-                            },
-                            "message": d.message,
-                        })
-                    })
-                    .collect();
-                eprintln!("{}", serde_json::to_string_pretty(&entries).unwrap());
+                print_grouped_json(&flat, &config);
             }
         }
 
@@ -156,6 +139,108 @@ fn run(cli: &Cli) -> Result<bool> {
         let total = error_count.load(Ordering::Relaxed) + warning_count.load(Ordering::Relaxed);
         Ok(total > 0)
     }
+}
+
+/// Group diagnostics by rule_id, print help text once per group, then list locations.
+fn print_grouped_text(diagnostics: &[&Diagnostic], config: &config::Config) {
+    let help_map = rules::help_texts(config);
+
+    // BTreeMap for deterministic ordering by rule_id
+    let mut groups: BTreeMap<&str, (Severity, Vec<&Diagnostic>)> = BTreeMap::new();
+    for d in diagnostics {
+        groups
+            .entry(d.rule_id)
+            .or_insert_with(|| (d.severity, Vec::new()))
+            .1
+            .push(d);
+    }
+
+    for (rule_id, (severity, diags)) in &groups {
+        let sev = match severity {
+            Severity::Error => "error",
+            Severity::Warning => "warning",
+        };
+        let count = diags.len();
+        eprintln!(
+            "{sev}[{rule_id}] ({count} violation{})",
+            if count == 1 { "" } else { "s" }
+        );
+
+        if let Some(help) = help_map.get(rule_id) {
+            for line in textwrap(help, 76) {
+                eprintln!("  {line}");
+            }
+            eprintln!();
+        }
+
+        for d in diags {
+            eprintln!("  {}:{}:{}", d.path, d.line, d.col);
+        }
+        eprintln!();
+    }
+}
+
+/// Group diagnostics by rule_id in JSON output, with help text per group.
+fn print_grouped_json(diagnostics: &[&Diagnostic], config: &config::Config) {
+    let help_map = rules::help_texts(config);
+
+    let mut groups: BTreeMap<&str, Vec<&Diagnostic>> = BTreeMap::new();
+    for d in diagnostics {
+        groups.entry(d.rule_id).or_default().push(d);
+    }
+
+    let json_groups: Vec<serde_json::Value> = groups
+        .into_iter()
+        .map(|(rule_id, diags)| {
+            let locations: Vec<serde_json::Value> = diags
+                .iter()
+                .map(|d| {
+                    serde_json::json!({
+                        "path": d.path,
+                        "line": d.line,
+                        "col": d.col,
+                        "message": d.message,
+                    })
+                })
+                .collect();
+            serde_json::json!({
+                "rule_id": rule_id,
+                "severity": match diags[0].severity {
+                    Severity::Error => "error",
+                    Severity::Warning => "warning",
+                },
+                "help": help_map.get(rule_id).unwrap_or(&""),
+                "count": diags.len(),
+                "violations": locations,
+            })
+        })
+        .collect();
+
+    eprintln!("{}", serde_json::to_string_pretty(&json_groups).unwrap());
+}
+
+/// Simple word-wrap that breaks on whitespace boundaries.
+fn textwrap(text: &str, width: usize) -> Vec<String> {
+    let mut lines = Vec::new();
+    let mut current = String::new();
+
+    for word in text.split_whitespace() {
+        if current.is_empty() {
+            current.push_str(word);
+        } else if current.len() + 1 + word.len() > width {
+            lines.push(std::mem::take(&mut current));
+            current.push_str(word);
+        } else {
+            current.push(' ');
+            current.push_str(word);
+        }
+    }
+
+    if !current.is_empty() {
+        lines.push(current);
+    }
+
+    lines
 }
 
 fn collect_python_files(paths: &[PathBuf]) -> Result<Vec<PathBuf>> {

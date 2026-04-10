@@ -12,6 +12,14 @@ impl Rule for NoTodoComment {
 
     fn severity(&self) -> Severity { Severity::Warning }
 
+    fn help(&self) -> &'static str {
+        "Unresolved TODO/FIXME/HACK/XXX comments rot in the codebase. Either \
+         fix the issue now, or create a ticket in the issue tracker and \
+         reference it (e.g. `# TODO(PROJ-123): ...`). If the comment is \
+         tracking a known limitation that cannot be fixed yet, suppress with \
+         `# slopcop: ignore[no-todo-comment]`."
+    }
+
     fn node_kinds(&self) -> &'static [&'static str] {
         &["comment"]
     }

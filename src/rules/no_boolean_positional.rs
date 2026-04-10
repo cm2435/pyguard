@@ -10,6 +10,14 @@ impl Rule for NoBooleanPositional {
 
     fn severity(&self) -> Severity { Severity::Warning }
 
+    fn help(&self) -> &'static str {
+        "`foo(True)` is unreadable — the reader must check the function \
+         signature to understand what `True` controls. Pass booleans as \
+         keyword arguments: `foo(verbose=True)`. If the callee's API doesn't \
+         support keyword args, suppress with \
+         `# slopcop: ignore[no-boolean-positional]`."
+    }
+
     fn node_kinds(&self) -> &'static [&'static str] {
         &["call"]
     }

@@ -10,6 +10,15 @@ impl Rule for NoHasattrGetattr {
         "no-hasattr-getattr"
     }
 
+    fn help(&self) -> &'static str {
+        "`hasattr()` and `getattr()` hide AttributeError and bypass type \
+         checkers. Replace with an explicit `try`/`except AttributeError`, a \
+         Protocol that declares the expected interface, or a direct attribute \
+         access. If the call is genuinely dynamic (plugin dispatch, \
+         deserialization), suppress with \
+         `# slopcop: ignore[no-hasattr-getattr]`."
+    }
+
     fn node_kinds(&self) -> &'static [&'static str] {
         &["call"]
     }

@@ -9,6 +9,13 @@ impl Rule for NoBareExcept {
         "no-bare-except"
     }
 
+    fn help(&self) -> &'static str {
+        "A bare `except:` catches everything including `KeyboardInterrupt` and \
+         `SystemExit`, making it impossible to Ctrl-C out of the program. At \
+         minimum use `except Exception:`. Better: catch the specific exception \
+         types you expect."
+    }
+
     fn node_kinds(&self) -> &'static [&'static str] {
         &["except_clause"]
     }

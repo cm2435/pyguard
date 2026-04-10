@@ -10,6 +10,17 @@ impl Rule for GuardedFunctionImport {
 
     fn severity(&self) -> Severity { Severity::Warning }
 
+    fn help(&self) -> &'static str {
+        "Verify whether a real circular dependency or optional-dependency guard \
+         exists before adding a `# reason` comment. Trace the import chain: does \
+         module_A -> module_B -> ... -> module_A form a cycle? If a genuine cycle \
+         exists, document it: `# reason: avoid import cycle between foo.bar and \
+         baz.qux`. If the import is for an optional heavy dependency, document \
+         that: `# reason: optional dep; imported only when feature X is used`. \
+         If NO cycle or optional-dep guard exists, move the import to the top of \
+         the file. Do NOT add a `# reason` comment just to silence this warning."
+    }
+
     fn node_kinds(&self) -> &'static [&'static str] {
         &["import_statement", "import_from_statement"]
     }
