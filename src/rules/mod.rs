@@ -8,6 +8,7 @@ pub mod no_dataclass;
 pub mod no_future_annotations;
 pub mod no_hasattr_getattr;
 pub mod no_nested_try;
+pub mod no_or_empty_coalesce;
 pub mod no_pass_except;
 pub mod no_print;
 pub mod no_redundant_none_check;
@@ -68,6 +69,7 @@ pub fn all_rules_with_config(config: &Config) -> Vec<Box<dyn Rule>> {
         Box::new(no_boolean_positional::NoBooleanPositional),
         Box::new(no_redundant_none_check::NoRedundantNoneCheck),
         Box::new(no_sentinel_default::NoSentinelDefault),
+        Box::new(no_or_empty_coalesce::NoOrEmptyCoalesce),
     ]
 }
 

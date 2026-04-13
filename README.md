@@ -60,6 +60,7 @@ All rules are **enabled by default**. Disable per-project via `pyproject.toml`.
 | `no-str-empty-default` | `str = ""` defaults on params and model fields — use `str \| None = None` or make required |
 | `no-boolean-positional` | Bare `True`/`False` as positional arguments — use keyword arguments for clarity |
 | `no-redundant-none-check` | `x is None` when `x` is typed as non-optional |
+| `no-or-empty-coalesce` | `obj.attr or {}` / `or []` / `or ""` etc. — check `is None` explicitly or remove dead fallback |
 | `max-function-params` | Functions with more than 8 parameters (configurable) — group into a model |
 
 ## Configuration
