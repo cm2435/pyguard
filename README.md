@@ -53,6 +53,7 @@ All rules are **enabled by default**. Disable per-project via `pyproject.toml`.
 | `no-broad-except` | `except Exception:` / `except BaseException:` — too broad, catch specific types |
 | `no-pass-except` | `except` blocks containing only `pass` — silently swallows exceptions |
 | `no-nested-try` | Nested `try` blocks — extract the inner try into a separate function |
+| `no-async-from-sync` | `asyncio.run()` / `get_event_loop()` / `run_until_complete()` / `ensure_future()` / `create_task()` inside a sync function — make the caller `async def` or move the sync/async boundary to an entrypoint |
 | `no-print` | `print()` calls — use structured logging |
 | `no-todo-comment` | `TODO`, `FIXME`, `HACK`, `XXX` comments — resolve or track in an issue |
 | `no-assert` | `assert` in production code — use `if not ...: raise ValueError(...)` instead |

@@ -1,6 +1,7 @@
 pub mod guarded_function_import;
 pub mod max_function_params;
 pub mod no_assert;
+pub mod no_async_from_sync;
 pub mod no_bare_except;
 pub mod no_boolean_positional;
 pub mod no_broad_except;
@@ -63,6 +64,7 @@ pub fn all_rules_with_config(config: &Config) -> Vec<Box<dyn Rule>> {
         Box::new(no_str_empty_default::NoStrEmptyDefault),
         Box::new(no_typing_any::NoTypingAny),
         Box::new(no_assert::NoAssert),
+        Box::new(no_async_from_sync::NoAsyncFromSync),
         Box::new(no_nested_try::NoNestedTry),
         Box::new(no_pass_except::NoPassExcept),
         Box::new(max_function_params::MaxFunctionParams { max }),
